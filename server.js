@@ -6,7 +6,7 @@ const client = new MongoClient(process.env.URI);
 const cors = require("cors");
 app.use(cors());
 var collection = null;
-app.listen(5000, async () => {
+app.listen(process.env.PORT||5000, async () => {
   try {
     await client.connect();
     console.log("App listening");
