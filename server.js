@@ -52,3 +52,30 @@ app.post("/", async(req,res)=>{
     res.send(error).status(401);
   }
 });
+
+app.get("/remaining",async(req,res)=>{
+  
+  try {
+    let database = client.db(_database);
+    let collection= database.collection(_collection);
+    let results = await collection.aggregate([
+      {$match:{responded:null}},{$count:"responded"}
+    ]).toArray();
+    res.send(results[0]);  
+  } catch (error) {
+    res.send(error);
+  }
+})
+app.get("/total",async(req,res)=>{
+  
+  try {
+    let database = client.db(_database);
+    let collection= database.collection(_collection);
+    let results = await collection.aggregate([
+      {$count:"total"}
+    ]).toArray();
+    res.send(results[0]);  
+  } catch (error) {
+    res.send(error);
+  }
+})
