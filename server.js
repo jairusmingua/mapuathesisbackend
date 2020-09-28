@@ -5,9 +5,12 @@ const mongo = require("mongodb");
 const dotenv = require("dotenv").config();
 const client = new MongoClient(process.env.URI);
 const cors = require("cors");
+const util = require("./util");
+const http = require('http').createServer(app);
+const io = require("socket.io")(http);
+const io_port = 5500;
 app.use(cors());
 app.use(express.json());
-
 
 const _database = "thesis";
 const _collection = "tweets";
@@ -33,49 +36,54 @@ app.get("/", async (req, res) => {
     res.send(error);
   }
 });
+app.post("/done",async(req,res)=>{
+  let respondent = req.body.respondent;
+})
 app.post("/", async(req,res)=>{
   let id = req.body._id;
   let answer = req.body.answer;
   let respondent = req.body.respondent;
-  try {
+  
     let database = client.db(_database);
     let collection = database.collection(_collection);
     collection.updateOne({_id:new mongo.ObjectID(id)},{
       $set:{label:answer,respondent:respondent,responded:true}
-    }).then((data)=>{
+    }).then(async(data)=>{
+      let remaining = await util.getRemaining(client.db(_database),_collection);
+      io.emit("update",remaining);
       res.send(data);
     }).catch((error)=>{
       res.send(error);
     })
-  } catch (error) {
-    console.log(error);
-    res.send(error).status(401);
-  }
+  
 });
 
+
 app.get("/remaining",async(req,res)=>{
+    
+    util.getRemaining(client.db(_database),_collection).then((data)=>{
+      res.send(data);  
+    }).catch((err)=>{
+      res.send(err);
+    });
   
-  try {
-    let database = client.db(_database);
-    let collection= database.collection(_collection);
-    let results = await collection.aggregate([
-      {$match:{responded:null}},{$count:"responded"}
-    ]).toArray();
-    res.send(results[0]);  
-  } catch (error) {
-    res.send(error);
-  }
 })
 app.get("/total",async(req,res)=>{
   
   try {
-    let database = client.db(_database);
-    let collection= database.collection(_collection);
-    let results = await collection.aggregate([
-      {$count:"total"}
-    ]).toArray();
-    res.send(results[0]);  
+    let result = util.getTotal(client.db(_database),_collection);
+    res.send(result);  
   } catch (error) {
     res.send(error);
   }
+})
+http.listen(io_port,()=>{
+  console.log(`io listening at port: ${io_port}`);
+})
+io.on("connection",(socket)=>{
+  console.log("A user is connected");
+  socket.on("disconnect",()=>{
+    console.log('A user is disconnected');
+  })
+  
 })
