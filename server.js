@@ -39,7 +39,19 @@ app.get("/", async (req, res) => {
   }
 });
 app.post("/done",async(req,res)=>{
-  let respondent = req.body.respondent;
+  let respondent = req.body; 
+  try {
+    let database = client.db(_database);
+    let collection=database.collection("respondents");
+    collection.insertOne(respondent)
+    .then((result)=>{
+      res.send(result);
+    }).catch((err)=>{
+      res.send(err);
+    })
+  } catch (error) {
+    res.send(error);
+  }
 })
 app.post("/", async(req,res)=>{
   let id = req.body._id;
