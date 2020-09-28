@@ -20,7 +20,17 @@ app.get("/", async (req, res) => {
     let database = client.db(_database);
     let collection = database.collection(_collection);
     const tweet = await collection.aggregate(
-        [ { $sample: { size: 1 } } ]
+      [
+        {
+          '$match': {
+            'responded': null
+          }
+        }, {
+          '$sample': {
+            'size': 1
+          }
+        }
+      ]
         ).toArray();
     res.send(tweet);
   } catch (error) {
