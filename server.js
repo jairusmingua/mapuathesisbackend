@@ -71,7 +71,7 @@ app.get("/remaining",async(req,res)=>{
 app.get("/total",async(req,res)=>{
   
   try {
-    let result = util.getTotal(client.db(_database),_collection);
+    let result = await util.getTotal(client.db(_database),_collection);
     res.send(result);  
   } catch (error) {
     res.send(error);
