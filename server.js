@@ -15,23 +15,15 @@ app.use(express.json());
 const _database = "thesis";
 const _collection = "tweets";
 
-app.listen(process.env.PORT||5000, async () => {
-  try {
-    await client.connect();
-    console.log("App listening");
-  } catch (err) {
-    console.log(err);
-  }
-});
 app.get("/", async (req, res) => {
   try {
     let database = client.db(_database);
     let collection = database.collection(_collection);
     const tweet = await collection.aggregate(
         [ { $sample: { size: 1 } } ]
-    ).toArray();
+        ).toArray();
     res.send(tweet);
-} catch (error) {
+  } catch (error) {
     console.log(error);
     res.send(error);
   }
@@ -55,35 +47,34 @@ app.post("/", async(req,res)=>{
     }).catch((error)=>{
       res.send(error);
     })
-  
+    
 });
 
 
 app.get("/remaining",async(req,res)=>{
-    
+  
     util.getRemaining(client.db(_database),_collection).then((data)=>{
       res.send(data);  
     }).catch((err)=>{
       res.send(err);
     });
   
-})
-app.get("/total",async(req,res)=>{
+  })
+  app.get("/total",async(req,res)=>{
   
-  try {
-    let result = await util.getTotal(client.db(_database),_collection);
+    try {
+      let result = await util.getTotal(client.db(_database),_collection);
     res.send(result);  
   } catch (error) {
     res.send(error);
   }
 })
-http.listen(io_port,()=>{
-  console.log(`io listening at port: ${io_port}`);
-})
-io.on("connection",(socket)=>{
-  console.log("A user is connected");
-  socket.on("disconnect",()=>{
-    console.log('A user is disconnected');
-  })
-  
-})
+
+http.listen(process.env.PORT||5000, async () => {
+    try {
+      await client.connect();
+      console.log("App listening");
+    } catch (err) {
+      console.log(err);
+    }
+});
