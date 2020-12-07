@@ -113,11 +113,11 @@ app.post("/", async (req, res) => {
       }
     )
     .then(async (data) => {
-      let remaining = await util.getRemaining(
+      let total = await util.getTotal(
         client.db(_database),
         _collection
       );
-      io.emit("update", remaining);
+      io.emit("update", total);
       res.send(data);
     })
     .catch((error) => {
