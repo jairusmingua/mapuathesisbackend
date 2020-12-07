@@ -113,7 +113,7 @@ app.post("/", async (req, res) => {
       }
     )
     .then(async (data) => {
-      let total = await util.getTotal(
+      let total = await util.getStatus(
         client.db(_database),
         _collection
       );
