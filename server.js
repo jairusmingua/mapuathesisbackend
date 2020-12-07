@@ -33,6 +33,7 @@ app.get("/", async (req, res) => {
         },
       ])
       .toArray();
+    
     res.send(tweet);
   } catch (error) {
     console.log(error);
@@ -50,7 +51,6 @@ app.post("/done", async (req, res) => {
         lastName: respondent.lastName,
       })
       .then((result) => {
-        console.log(result);
         if(result){
           collection.updateOne({firstName:respondent.firstName,lastName:respondent.lastName},{
               $inc:{
@@ -64,7 +64,6 @@ app.post("/done", async (req, res) => {
             
           })
           .then((data)=>{
-            console.log("update")
             res.send(data);
             
           })
@@ -144,7 +143,14 @@ app.get("/total", async (req, res) => {
     res.send(error);
   }
 });
-
+app.get("/status",async(req,res)=>{
+  try {
+    let result = await util.getStatus(client.db(_database),_collection);
+    res.send(result); 
+  } catch (error) {
+    res.send(error);
+  }
+})
 http.listen(process.env.PORT || 5000, async () => {
   try {
     await client.connect();
