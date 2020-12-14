@@ -102,14 +102,13 @@ app.post("/", async (req, res) => {
   let id = req.body._id;
   let answer = req.body.answer;
   let respondent = req.body.respondent;
-
   let database = client.db(_database);
   let collection = database.collection(_collection);
   collection
     .updateOne(
       { _id: new mongo.ObjectID(id) },
       {
-        $set: { label: answer, respondent: respondent, responded: true },
+        $set: { label: answer, respondent: respondent, responded: true,dateResponded:new Date(Date.now()).toISOString() },
       }
     )
     .then(async (data) => {
@@ -124,7 +123,24 @@ app.post("/", async (req, res) => {
       res.send(error);
     });
 });
-
+app.get("/recents",async(req,res)=>{
+  util.getRecent(client.db(_database),_collection)
+  .then((data)=>{
+    res.send(data);
+  })
+  .catch((err)=>{
+    res.send(err)
+  })
+})
+app.post("/role",async(req,res)=>{
+  let user = req.body
+  util.getRole(client.db(_database),"respondents",user)
+  .then((data)=>{
+    res.send(data)
+  }).catch((err)=>{
+    res.send(err)
+  })
+});
 app.get("/remaining", async (req, res) => {
   util
     .getRemaining(client.db(_database), _collection)
@@ -155,6 +171,9 @@ http.listen(process.env.PORT || 5000, async () => {
   try {
     await client.connect();
     console.log("App listening");
+    io.on("connect",(socket)=>{
+      console.log("listening socket")
+    })
   } catch (err) {
     console.log(err);
   }
