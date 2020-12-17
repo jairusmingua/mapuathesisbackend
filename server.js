@@ -7,7 +7,12 @@ const client = new MongoClient(process.env.URI);
 const cors = require("cors");
 const util = require("./util");
 const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http,{
+  cors:{
+    origin:"*",
+    methods:["GET","POST"]
+  }
+});
 const io_port = 5500;
 app.use(cors());
 app.use(express.json());
@@ -132,6 +137,15 @@ app.get("/recents",async(req,res)=>{
     res.send(err)
   })
 })
+app.get("/last",async(req,res)=>{
+  util.getLast(client.db(_database),_collection)
+  .then((data)=>{
+    res.send(data);
+  })
+  .catch((err)=>{
+    res.send(err)
+  })
+})
 app.post("/role",async(req,res)=>{
   let user = req.body
   util.getRole(client.db(_database),"respondents",user)
@@ -170,10 +184,12 @@ app.get("/status",async(req,res)=>{
 http.listen(process.env.PORT || 5000, async () => {
   try {
     await client.connect();
-    console.log("App listening");
-    io.on("connect",(socket)=>{
-      console.log("listening socket")
+    io.on("connection",(socket)=>{
+      socket.on("tweet",(data)=>{
+        io.emit("tweet","update")
+      })
     })
+    console.log("App listening");
   } catch (err) {
     console.log(err);
   }

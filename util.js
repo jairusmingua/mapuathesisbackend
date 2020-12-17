@@ -28,13 +28,19 @@ async function getRecent(database,_collection){
     return error;
   }
 }
+async function getLast(database,_collection){
+  try {
+    let collection = database.collection(_collection);
+    let results = collection.aggregate([{$sort:{datePosted:-1}},{$limit:5}]).toArray()
+    return results;
+  } catch (error) {
+    return error;
+  }
+}
 async function getRole(database,_collection,user){
   try{
-    console.log("getRole")
-    console.log(user)
     let collection = database.collection(_collection);
     let role = await collection.findOne(user);
-    console.log(role)
     return {role:role["role"]!=undefined?role["role"]:null}
 
   }catch(err){
@@ -58,4 +64,4 @@ async function getStatus(database,_collection){
     throw error
   }
 }
-module.exports ={ getRemaining,getTotal,getStatus,getRole,getRecent };
+module.exports ={ getRemaining,getTotal,getStatus,getRole,getRecent,getLast };
